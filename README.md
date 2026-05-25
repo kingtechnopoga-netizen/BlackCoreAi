@@ -13,6 +13,7 @@ BlackCoreAI is a fully static frontend web app. No backend, no database, no API 
 - 10 chat modes: Normal, Code Assistant, Web Research Style, Creative Writer, Tagalog Assistant, Explain Like Beginner, Business Helper, Prompt Engineer, Social Media Helper, Cyber Study Mode
 - Code Assistant toggle (works on top of any mode)
 - Multiple AI providers in the fallback list: OpenAI, Anthropic, Google, xAI, DeepSeek, Meta, Mistral, Qwen, NVIDIA
+- **Persistent chat history** — saved locally in your browser by default, with a privacy toggle to disable it
 - Dark mode and light mode (saved locally)
 - Adjustable font size (Small / Medium / Large)
 - Regenerate last response
@@ -24,9 +25,12 @@ BlackCoreAI is a fully static frontend web app. No backend, no database, no API 
 
 ## Privacy
 
-- Chat history is stored in memory only and is cleared when the page closes.
-- Only your **theme**, **font size**, **selected model**, **selected mode**, and **streaming preference** are saved in `localStorage`.
-- Messages are sent to Puter.js to access AI models. Do not share private or sensitive information.
+- Chat history is now **saved locally in your browser** by default so you can resume past conversations. It never leaves your device except to reach the AI model you choose.
+- You can turn this off any time in **Settings → Save Chat History → Off**, which makes the chat session-only and immediately wipes any previously saved messages.
+- "Clear Chat" always wipes both the on-screen chat and the saved local copy.
+- Stored locally: theme, font size, selected model, selected mode, streaming preference, save-history preference, and (when enabled) chat messages.
+- Storage is capped at ~800 KB; oldest messages are trimmed automatically if the saved chat grows larger than that.
+- Don't share private or sensitive information.
 
 ## Files
 

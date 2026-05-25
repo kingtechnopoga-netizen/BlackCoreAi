@@ -159,6 +159,15 @@
         </select>
       </div>
 
+      <div class="setting-group">
+        <label class="setting-label" for="saveHistorySelect">Save Chat History</label>
+        <select id="saveHistorySelect" class="select-input">
+          <option value="on" selected>On (saved on this device)</option>
+          <option value="off">Off (session only)</option>
+        </select>
+        <p class="setting-help">When On, your chat is saved locally in this browser and restored next time. Tap Clear Chat to wipe it.</p>
+      </div>
+
       <div class="setting-actions">
         <button id="clearChatBtn" class="btn btn-danger" type="button">Clear Chat</button>
         <button id="copyChatBtn" class="btn btn-ghost" type="button">Copy Chat</button>
@@ -183,8 +192,9 @@
         <h3 class="note-title">Privacy Note</h3>
         <p>
           BlackCoreAI is a static frontend app. Your messages are sent to Puter.js to access AI models.
-          By default, this app does not save your chat history permanently — it lives only in this session.
-          Only your theme, font size, model, mode, and streaming preference are stored locally.
+          When "Save Chat History" is On (default), your chat is stored only in this browser, on this device — it never leaves your phone or PC except to reach the AI provider you chose.
+          You can switch this off any time, or tap Clear Chat to remove what was saved.
+          Your theme, font size, model, mode, streaming, and history preferences are also stored locally.
           Do not share private or sensitive information.
         </p>
       </div>

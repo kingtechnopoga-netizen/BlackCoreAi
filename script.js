@@ -15,11 +15,14 @@
     mode: "bcai.mode",
     streaming: "bcai.streaming",
     codeAssist: "bcai.codeAssist",
+    saveHistory: "bcai.saveHistory",
+    chatHistory: "bcai.chatHistory",
   };
 
   const SAFE_DEFAULT_MODEL = "gpt-5-nano";
   const SECONDARY_DEFAULT_MODEL = "gpt-4.1-nano";
   const MAX_CONTEXT_MESSAGES = 12; // recent context only
+  const HISTORY_MAX_BYTES = 800000; // ~800KB cap to stay safely under localStorage quota
 
   /* Fallback model list. Each entry: { id, label, group } */
   const FALLBACK_MODELS = [
@@ -102,6 +105,7 @@
     selectedMode: "normal",
     codeAssistOn: false,
     streaming: false,
+    saveHistory: true,
   };
 
   /* ---------- DOM ---------- */
@@ -131,6 +135,7 @@
     modeSelectSettings: $("modeSelectSettings"),
     fontSizeSelect: $("fontSizeSelect"),
     streamingSelect: $("streamingSelect"),
+    saveHistorySelect: $("saveHistorySelect"),
     clearChatBtn: $("clearChatBtn"),
     copyChatBtn: $("copyChatBtn"),
     exportChatBtn: $("exportChatBtn"),
@@ -262,6 +267,9 @@
     const mode = safeGet(STORAGE_KEYS.mode) || "normal";
     const streaming = safeGet(STORAGE_KEYS.streaming) === "on";
     const codeAssist = safeGet(STORAGE_KEYS.codeAssist) === "on";
+    const savedHistoryPref = safeGet(STORAGE_KEYS.saveHistory);
+    // Default ON if user has never set the preference
+    const saveHistory = savedHistoryPref === null ? true : savedHistoryPref === "on";
 
     applyTheme(theme);
     applyFontSize(font);
@@ -270,10 +278,12 @@
     state.selectedMode = mode;
     state.streaming = streaming;
     state.codeAssistOn = codeAssist;
+    state.saveHistory = saveHistory;
 
     els.themeSelect.value = theme;
     els.fontSizeSelect.value = font;
     els.streamingSelect.value = streaming ? "on" : "off";
+    els.saveHistorySelect.value = saveHistory ? "on" : "off";
 
     els.modeSelect.value = mode;
     els.modeSelectSettings.value = mode;
@@ -422,6 +432,66 @@
       populateModelSelects(combined);
       if (!silent) showToast("Could not refresh model list. Fallback models are loaded.");
     }
+  }
+
+  /* ---------- Persistent Chat History ---------- */
+
+  function saveChatHistory() {
+    if (!state.saveHistory) return;
+    try {
+      let data = state.messages.map((m) => ({ role: m.role, content: m.content }));
+      let json = JSON.stringify(data);
+      // Trim oldest pair-by-pair if storage exceeds cap
+      while (json.length > HISTORY_MAX_BYTES && data.length > 2) {
+        data.shift();
+        json = JSON.stringify(data);
+      }
+      safeSet(STORAGE_KEYS.chatHistory, json);
+    } catch (e) {
+      console.warn("[BlackCoreAI] Could not save chat history:", e);
+    }
+  }
+
+  function loadSavedChatArray() {
+    try {
+      const raw = safeGet(STORAGE_KEYS.chatHistory);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(
+        (m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string"
+      );
+    } catch (e) {
+      console.warn("[BlackCoreAI] Could not parse saved chat:", e);
+      return [];
+    }
+  }
+
+  function clearSavedChat() {
+    try { localStorage.removeItem(STORAGE_KEYS.chatHistory); } catch (e) { /* ignore */ }
+  }
+
+  function restoreSavedChat() {
+    const arr = loadSavedChatArray();
+    if (arr.length === 0) return 0;
+    hideWelcome();
+    for (const m of arr) {
+      if (m.role === "user") {
+        const el = renderUserMessage(m.content);
+        state.messages.push({ role: "user", content: m.content, el });
+      } else {
+        const msg = document.createElement("div");
+        msg.className = "message message-ai";
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble";
+        msg.appendChild(bubble);
+        els.chatArea.appendChild(msg);
+        fillAiMessage(msg, m.content);
+        state.messages.push({ role: "assistant", content: m.content, el: msg });
+      }
+    }
+    els.regenerateBtn.disabled = !hasUserMessage();
+    return arr.length;
   }
 
   /* ---------- Code Assist toggle ---------- */
@@ -633,6 +703,10 @@
       els.userInput.value = "";
       autosizeTextarea();
       updateCharCount();
+      saveChatHistory();
+    } else {
+      // Regenerate already removed the previous assistant entry — persist that change too
+      saveChatHistory();
     }
 
     // Lock UI
@@ -676,6 +750,7 @@
 
     fillAiMessage(aiMsgEl, aiText);
     state.messages.push({ role: "assistant", content: aiText, el: aiMsgEl });
+    saveChatHistory();
 
     if (usedFallback) {
       showToast("Selected model failed. Used a fallback model.", 3000);
@@ -740,6 +815,7 @@
     els.chatArea.appendChild(sys);
     els.welcomeMessage = sys;
     els.regenerateBtn.disabled = true;
+    clearSavedChat();
     showToast("Chat cleared.");
   }
 
@@ -906,6 +982,20 @@
       safeSet(STORAGE_KEYS.streaming, state.streaming ? "on" : "off");
     });
 
+    // Save Chat History
+    els.saveHistorySelect.addEventListener("change", () => {
+      const on = els.saveHistorySelect.value === "on";
+      state.saveHistory = on;
+      safeSet(STORAGE_KEYS.saveHistory, on ? "on" : "off");
+      if (on) {
+        saveChatHistory();
+        showToast("Chat history saving enabled.");
+      } else {
+        clearSavedChat();
+        showToast("Saved chat history removed from this device.");
+      }
+    });
+
     // Clear chat
     els.clearChatBtn.addEventListener("click", () => {
       if (confirm("Clear all chat messages?")) clearChat();
@@ -944,6 +1034,14 @@
 
     // Populate selects with fallback first so UI is responsive even if Puter is slow
     populateModelSelects(dedupeModels(FALLBACK_MODELS));
+
+    // Restore previous chat if user opted in (default ON)
+    if (state.saveHistory) {
+      const restored = restoreSavedChat();
+      if (restored > 0) {
+        showToast(`Restored ${restored} saved messages.`, 2400);
+      }
+    }
 
     // Check Puter availability (non-blocking warn)
     if (typeof puter === "undefined") {
