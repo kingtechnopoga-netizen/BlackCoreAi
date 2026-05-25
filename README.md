@@ -54,21 +54,40 @@ npx serve .
 
 Then visit `http://localhost:8080`.
 
-## Deploy on Render (Static Site)
+## Deploy on Render (Blueprint — recommended)
 
-BlackCoreAI is designed to deploy on [Render](https://render.com) as a Static Site with **zero configuration**.
+This repo includes a [`render.yaml`](./render.yaml) Blueprint, so Render can configure everything automatically. No dashboard tweaking required.
 
-1. Push this repository to GitHub (or use the existing one).
-2. In Render, click **New +** → **Static Site**.
-3. Connect your GitHub repo and select the branch.
-4. Use these settings:
+### One-click via Blueprint
+
+1. Push this repo to GitHub (already done if you're reading this on GitHub).
+2. Go to [dashboard.render.com/blueprints](https://dashboard.render.com/blueprints) → **New Blueprint Instance**.
+3. Connect your GitHub account and select the `BlackCoreAi` repository.
+4. Render reads `render.yaml` and proposes the service `blackcoreai` (type: static).
+5. Click **Apply** → done. You'll get a public URL like `https://blackcoreai.onrender.com`.
+
+The Blueprint configures:
+
+- **Type:** Static Site
+- **Build Command:** *(none)*
+- **Publish Directory:** `./` (repo root)
+- **PR Previews:** enabled (every pull request gets its own preview URL)
+- **Security headers:** `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`
+- **Caching:** 1 day for `*.css` and `*.js`, no-cache for `index.html`
+- **SPA-style rewrite:** all unknown paths rewrite to `/index.html`
+
+### Manual Static Site (alternative)
+
+If you prefer not to use the Blueprint, you can still deploy manually:
+
+1. In Render, click **New +** → **Static Site**.
+2. Connect your GitHub repo and select the branch.
+3. Use these settings:
    - **Build Command:** *(leave empty)*
    - **Publish Directory:** `.` (a single dot, meaning the repo root)
-5. Click **Create Static Site**.
+4. Click **Create Static Site**.
 
-Render will deploy the static files and give you a public URL. Open it on your phone — it works.
-
-> If your `index.html` is inside a subfolder (for example, this folder is `BlackCoreAi/`), set **Publish Directory** to `BlackCoreAi` instead of `.`.
+> If your `index.html` is inside a subfolder (for example `BlackCoreAi/`), set **Publish Directory** to `BlackCoreAi` and update `staticPublishPath` in `render.yaml` to `./BlackCoreAi`.
 
 ## Deploy on other static hosts
 
