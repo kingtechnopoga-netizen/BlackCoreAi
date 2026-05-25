@@ -1,6 +1,7 @@
 /* =========================================================
-   BlackCoreAI - script.js
+   BlackCoreAI — script.js
    Vanilla JS chatbot powered by Puter.js
+   Premium dark-tech UI build
    ========================================================= */
 
 (function () {
@@ -9,103 +10,118 @@
   /* ---------- Constants ---------- */
 
   const STORAGE_KEYS = {
-    theme: "bcai.theme",
-    fontSize: "bcai.fontSize",
-    model: "bcai.model",
-    mode: "bcai.mode",
-    streaming: "bcai.streaming",
-    codeAssist: "bcai.codeAssist",
-    saveHistory: "bcai.saveHistory",
-    chatHistory: "bcai.chatHistory",
+    theme:         "bcai.theme",
+    fontSize:      "bcai.fontSize",
+    model:         "bcai.model",
+    mode:          "bcai.mode",
+    streaming:     "bcai.streaming",
+    codeAssist:    "bcai.codeAssist",
+    saveHistory:   "bcai.saveHistory",
+    chatHistory:   "bcai.chatHistory",
+    responseStyle: "bcai.responseStyle",
   };
 
   const SAFE_DEFAULT_MODEL = "gpt-5-nano";
   const SECONDARY_DEFAULT_MODEL = "gpt-4.1-nano";
-  const MAX_CONTEXT_MESSAGES = 12; // recent context only
-  const HISTORY_MAX_BYTES = 800000; // ~800KB cap to stay safely under localStorage quota
+  const MAX_CONTEXT_MESSAGES = 12;
+  const HISTORY_MAX_BYTES = 800000;
 
-  /* Fallback model list. Each entry: { id, label, group } */
+  /* Curated fallback model list */
   const FALLBACK_MODELS = [
     // OpenAI
-    { id: "gpt-5-nano", label: "GPT-5 Nano - Fast", group: "OpenAI" },
-    { id: "openai/gpt-5-nano", label: "GPT-5 Nano (openai/)", group: "OpenAI" },
-    { id: "openai/gpt-5-mini", label: "GPT-5 Mini - Balanced", group: "OpenAI" },
-    { id: "openai/gpt-5-chat", label: "GPT-5 Chat - Smart", group: "OpenAI" },
-    { id: "openai/gpt-5.3-chat", label: "GPT-5.3 Chat", group: "OpenAI" },
-    { id: "openai/gpt-5.4-nano", label: "GPT-5.4 Nano - Latest/Fast", group: "OpenAI" },
-    { id: "gpt-4.1-nano", label: "GPT-4.1 Nano", group: "OpenAI" },
-    { id: "gpt-4.1-mini", label: "GPT-4.1 Mini", group: "OpenAI" },
-    { id: "gpt-4o-mini", label: "GPT-4o Mini", group: "OpenAI" },
+    { id: "gpt-5-nano",            label: "GPT-5 Nano · Fast",         group: "OpenAI" },
+    { id: "openai/gpt-5-mini",     label: "GPT-5 Mini · Balanced",     group: "OpenAI" },
+    { id: "openai/gpt-5-chat",     label: "GPT-5 Chat · Smart",        group: "OpenAI" },
+    { id: "openai/gpt-5.3-chat",   label: "GPT-5.3 Chat",              group: "OpenAI" },
+    { id: "openai/gpt-5.4-nano",   label: "GPT-5.4 Nano · Latest",     group: "OpenAI" },
+    { id: "gpt-4.1-nano",          label: "GPT-4.1 Nano",              group: "OpenAI" },
+    { id: "gpt-4.1-mini",          label: "GPT-4.1 Mini",              group: "OpenAI" },
+    { id: "gpt-4o-mini",           label: "GPT-4o Mini",               group: "OpenAI" },
 
     // Anthropic
-    { id: "anthropic/claude-sonnet-4.5", label: "Claude Sonnet 4.5 - Coding", group: "Anthropic" },
-    { id: "anthropic/claude-opus-4.5", label: "Claude Opus 4.5 - Advanced", group: "Anthropic" },
-    { id: "anthropic/claude-sonnet-4-6", label: "Claude Sonnet 4.6", group: "Anthropic" },
-    { id: "claude-sonnet-4", label: "Claude Sonnet 4", group: "Anthropic" },
-    { id: "claude-3-5-sonnet", label: "Claude 3.5 Sonnet", group: "Anthropic" },
+    { id: "anthropic/claude-sonnet-4.5", label: "Claude Sonnet 4.5 · Coding", group: "Anthropic" },
+    { id: "anthropic/claude-opus-4.5",   label: "Claude Opus 4.5 · Advanced", group: "Anthropic" },
+    { id: "anthropic/claude-sonnet-4-6", label: "Claude Sonnet 4.6",          group: "Anthropic" },
+    { id: "claude-sonnet-4",             label: "Claude Sonnet 4",            group: "Anthropic" },
+    { id: "claude-3-5-sonnet",           label: "Claude 3.5 Sonnet",          group: "Anthropic" },
 
     // Google
-    { id: "google/gemini-3-pro", label: "Gemini 3 Pro - Advanced", group: "Google" },
-    { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro", group: "Google" },
-    { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash - Fast", group: "Google" },
-    { id: "google/gemini-2.0-flash", label: "Gemini 2.0 Flash", group: "Google" },
+    { id: "google/gemini-3-pro",     label: "Gemini 3 Pro · Advanced", group: "Google" },
+    { id: "google/gemini-2.5-pro",   label: "Gemini 2.5 Pro",          group: "Google" },
+    { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash · Fast", group: "Google" },
+    { id: "google/gemini-2.0-flash", label: "Gemini 2.0 Flash",        group: "Google" },
 
     // xAI
     { id: "xai/grok-4", label: "Grok 4", group: "xAI" },
     { id: "xai/grok-3", label: "Grok 3", group: "xAI" },
 
     // DeepSeek
-    { id: "deepseek/deepseek-chat", label: "DeepSeek Chat - Coding", group: "DeepSeek" },
-    { id: "deepseek/deepseek-reasoner", label: "DeepSeek Reasoner", group: "DeepSeek" },
-    { id: "deepseek-chat", label: "DeepSeek Chat", group: "DeepSeek" },
+    { id: "deepseek/deepseek-chat",      label: "DeepSeek Chat · Coding", group: "DeepSeek" },
+    { id: "deepseek/deepseek-reasoner",  label: "DeepSeek Reasoner",      group: "DeepSeek" },
+    { id: "deepseek-chat",               label: "DeepSeek Chat",          group: "DeepSeek" },
 
-    // Meta / Llama
-    { id: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", label: "Llama 3.1 8B Instruct Turbo", group: "Meta" },
-    { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B Instruct", group: "Meta" },
+    // Meta
+    { id: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", label: "Llama 3.1 8B Turbo",       group: "Meta" },
+    { id: "meta-llama/llama-3.3-70b-instruct",           label: "Llama 3.3 70B Instruct",   group: "Meta" },
 
     // Mistral
-    { id: "mistral/mistral-large-latest", label: "Mistral Large - General", group: "Mistral" },
-    { id: "mistral-large-latest", label: "Mistral Large (latest)", group: "Mistral" },
-    { id: "mistral/codestral-latest", label: "Codestral - Code", group: "Mistral" },
+    { id: "mistral/mistral-large-latest", label: "Mistral Large · General", group: "Mistral" },
+    { id: "mistral-large-latest",         label: "Mistral Large (latest)",  group: "Mistral" },
+    { id: "mistral/codestral-latest",     label: "Codestral · Code",        group: "Mistral" },
 
     // Qwen
-    { id: "qwen/qwen3.7-max", label: "Qwen 3.7 Max", group: "Qwen" },
-    { id: "qwen/qwen3.6-plus", label: "Qwen 3.6 Plus", group: "Qwen" },
-    { id: "qwen/qwen3.5-plus", label: "Qwen 3.5 Plus", group: "Qwen" },
-    { id: "qwen/qwen3-coder", label: "Qwen Coder - Code", group: "Qwen" },
-    { id: "qwen/qwq-32b", label: "Qwen QwQ 32B", group: "Qwen" },
+    { id: "qwen/qwen3.7-max",  label: "Qwen 3.7 Max",       group: "Qwen" },
+    { id: "qwen/qwen3.6-plus", label: "Qwen 3.6 Plus",      group: "Qwen" },
+    { id: "qwen/qwen3.5-plus", label: "Qwen 3.5 Plus",      group: "Qwen" },
+    { id: "qwen/qwen3-coder",  label: "Qwen Coder · Code",  group: "Qwen" },
+    { id: "qwen/qwq-32b",      label: "Qwen QwQ 32B",       group: "Qwen" },
 
     // NVIDIA
-    { id: "nvidia/llama-3.1-nemotron-ultra-253b-v1", label: "Nemotron Ultra - Reasoning", group: "NVIDIA" },
+    { id: "nvidia/llama-3.1-nemotron-ultra-253b-v1", label: "Nemotron Ultra · Reasoning", group: "NVIDIA" },
   ];
 
   /* Mode instructions */
   const MODE_INSTRUCTIONS = {
-    normal:    "You are BlackCoreAI, a helpful and clear AI assistant. Give useful, direct, and easy-to-understand answers.",
-    code:      "You are BlackCoreAI Coding Assistant. Help with clean, working, beginner-friendly code. Explain errors clearly and provide complete fixed code when needed. Prioritize bug-free code, mobile-friendly design, and simple explanations.",
-    research:  "You are BlackCoreAI Research Assistant. Answer carefully and clearly. If real-time information is uncertain, say so. Do not invent sources. Explain what should be verified.",
-    creative:  "You are BlackCoreAI Creative Writer. Create original, emotional, natural, non-generic writing. Avoid robotic phrasing. Make the output engaging and ready to use.",
-    tagalog:   "You are BlackCoreAI Tagalog Assistant. Answer naturally in Tagalog or Taglish. Keep the tone friendly, clear, and useful.",
-    beginner:  "You are BlackCoreAI Beginner Teacher. Explain things in very simple words with examples. Avoid unnecessary jargon.",
-    business:  "You are BlackCoreAI Business Helper. Help create names, bios, captions, product descriptions, sales copy, and marketing ideas that sound trustworthy and professional.",
-    prompt:    "You are BlackCoreAI Prompt Engineer. Improve prompts to be clear, detailed, structured, and ready to copy-paste. Make prompts work better for AI builders, image generators, video generators, and coding agents.",
-    social:    "You are BlackCoreAI Social Media Helper. Help create viral-style hooks, captions, hashtags, bios, and short scripts for Facebook Reels, TikTok, and YouTube Shorts. Keep content natural and engaging.",
-    cyber:     "You are BlackCoreAI Cyber Study Assistant. Help only with ethical cybersecurity learning, defensive security, safe testing, and security best practices. Refuse illegal hacking, fraud, phishing, malware, credential theft, carding, or bypass instructions.",
+    general:    "You are BlackCoreAI, a refined and intelligent AI assistant. Give clear, accurate, useful, and direct answers. Match the user's tone and depth.",
+    code:       "You are BlackCoreAI Coding Assistant. Help with clean, working, production-ready code. Explain errors clearly and provide complete fixed code when needed. Prioritize correctness, modern patterns, and mobile-friendly design when relevant.",
+    debug:      "You are BlackCoreAI Debugging Mode. Diagnose bugs methodically: identify the root cause, explain why it happens, and provide a complete corrected version. Prefer minimal diffs and clear reasoning.",
+    creative:   "You are BlackCoreAI Creative Writer. Produce original, emotional, natural, non-generic writing. Avoid robotic phrasing and clichés. Make output engaging and ready to use.",
+    prompt:     "You are BlackCoreAI Prompt Engineer. Improve prompts to be clear, structured, and copy-ready for AI builders, image/video generators, and coding agents. Output the final prompt only unless asked otherwise.",
+    study:      "You are BlackCoreAI Study Helper. Explain concepts in simple, accurate language with one short example or analogy. Avoid unnecessary jargon. Offer step-by-step reasoning when helpful.",
+    business:   "You are BlackCoreAI Business Mode. Craft professional names, bios, captions, product descriptions, sales copy, and marketing ideas. Make output trustworthy, polished, and brand-safe.",
+    summarizer: "You are BlackCoreAI Summarizer. Condense the user's input into a clear, faithful summary. Default to 3-5 concise bullet points unless the user requests another format.",
+    translator: "You are BlackCoreAI Translator. Translate the user's text accurately while preserving meaning, tone, and nuance. If the source or target language is ambiguous, ask once for clarification.",
+    tagalog:    "You are BlackCoreAI Tagalog Assistant. Answer naturally in Tagalog or Taglish. Keep the tone friendly, clear, and useful.",
+
+    /* ---- Backward-compat keys (so old saved prefs still work) ---- */
+    normal:     "You are BlackCoreAI, a refined and intelligent AI assistant. Give clear, accurate, useful, and direct answers.",
+    research:   "You are BlackCoreAI Research Assistant. Answer carefully and clearly. If real-time information is uncertain, say so. Do not invent sources.",
+    beginner:   "You are BlackCoreAI Study Helper. Explain things in simple words with examples. Avoid unnecessary jargon.",
+    social:     "You are BlackCoreAI Social Media Helper. Help create viral-style hooks, captions, hashtags, bios, and short scripts. Keep content natural and engaging.",
+    cyber:      "You are BlackCoreAI Cyber Study Assistant. Help only with ethical cybersecurity learning, defensive security, and best practices. Refuse illegal hacking, fraud, phishing, malware, credential theft, carding, or bypass instructions.",
   };
 
   const CODE_ASSIST_EXTRA = "Additionally, act as a Code Assistant: provide clean, complete, working code examples. Explain logic briefly. When fixing code, return the full corrected version. Prefer modern, beginner-friendly, mobile-friendly patterns.";
 
+  const RESPONSE_STYLE_INSTRUCTIONS = {
+    balanced: "Default style: balanced length, clear structure, no fluff.",
+    concise:  "Style: be brief and to the point. Prefer short sentences and tight bullets. Skip preamble.",
+    detailed: "Style: provide thorough, well-structured answers with clear sections. Include reasoning, edge cases, and examples when useful.",
+    creative: "Style: be expressive, vivid, and original. Vary sentence rhythm. Avoid generic phrasing.",
+  };
+
   /* ---------- State ---------- */
 
   const state = {
-    messages: [],            // {role: 'user'|'assistant', content: string, el?: HTMLElement}
+    messages: [],
     sending: false,
-    currentModels: [],       // [{id,label,group}]
+    currentModels: [],
     selectedModel: SAFE_DEFAULT_MODEL,
-    selectedMode: "normal",
+    selectedMode: "general",
     codeAssistOn: false,
     streaming: false,
     saveHistory: true,
+    responseStyle: "balanced",
   };
 
   /* ---------- DOM ---------- */
@@ -113,38 +129,55 @@
   const $ = (id) => document.getElementById(id);
 
   const els = {
-    chatArea: $("chatArea"),
-    welcomeMessage: $("welcomeMessage"),
-    userInput: $("userInput"),
-    sendBtn: $("sendBtn"),
-    regenerateBtn: $("regenerateBtn"),
-    charCount: $("charCount"),
+    // Header
+    newChatBtn:       $("newChatBtn"),
+    themeToggleBtn:   $("themeToggleBtn"),
+    settingsBtn:      $("settingsBtn"),
 
-    modelSelect: $("modelSelect"),
-    modeSelect: $("modeSelect"),
+    // Chat surface
+    chatArea:         $("chatArea"),
+    welcomeScreen:    $("welcomeScreen"),
+
+    // Composer
+    userInput:        $("userInput"),
+    sendBtn:          $("sendBtn"),
+    regenerateBtn:    $("regenerateBtn"),
+    charCount:        $("charCount"),
+
+    // Control bar
+    modelSelect:      $("modelSelect"),
+    modeSelect:       $("modeSelect"),
     refreshModelsBtn: $("refreshModelsBtn"),
-    codeAssistBtn: $("codeAssistBtn"),
-    codeBadge: $("codeBadge"),
+    codeAssistToggle: $("codeAssistToggle"),
+    codeBadge:        $("codeBadge"),
 
-    settingsBtn: $("settingsBtn"),
-    settingsModal: $("settingsModal"),
-    closeSettingsBtn: $("closeSettingsBtn"),
+    // Utility row
+    utilityNewChatBtn: $("utilityNewChatBtn"),
+    copyChatBtn:       $("copyChatBtn"),
+    exportChatBtn:     $("exportChatBtn"),
+    clearChatBtn:      $("clearChatBtn"),
 
-    themeSelect: $("themeSelect"),
-    modelSelectSettings: $("modelSelectSettings"),
-    modeSelectSettings: $("modeSelectSettings"),
-    fontSizeSelect: $("fontSizeSelect"),
-    streamingSelect: $("streamingSelect"),
-    saveHistorySelect: $("saveHistorySelect"),
-    clearChatBtn: $("clearChatBtn"),
-    copyChatBtn: $("copyChatBtn"),
-    exportChatBtn: $("exportChatBtn"),
-    refreshModelsBtnSettings: $("refreshModelsBtnSettings"),
+    // Settings modal
+    settingsModal:        $("settingsModal"),
+    closeSettingsBtn:     $("closeSettingsBtn"),
+    themeSelect:          $("themeSelect"),
+    fontSizeSelect:       $("fontSizeSelect"),
+    responseStyleSelect:  $("responseStyleSelect"),
+    streamingSelect:      $("streamingSelect"),
+    saveHistorySelect:    $("saveHistorySelect"),
 
-    gcashNumber: $("gcashNumber"),
-    copyGcashBtn: $("copyGcashBtn"),
-    gcashCopyStatus: $("gcashCopyStatus"),
+    // Settings utilities
+    clearChatBtnSettings:    $("clearChatBtnSettings"),
+    copyChatBtnSettings:     $("copyChatBtnSettings"),
+    exportChatBtnSettings:   $("exportChatBtnSettings"),
+    refreshModelsBtnSettings:$("refreshModelsBtnSettings"),
 
+    // Donation
+    gcashNumber:    $("gcashNumber"),
+    copyGcashBtn:   $("copyGcashBtn"),
+    gcashCopyStatus:$("gcashCopyStatus"),
+
+    // Toast
     toast: $("toast"),
   };
 
@@ -160,11 +193,7 @@
   }
 
   /**
-   * Safe formatter:
-   * - escape HTML
-   * - detect ```lang\n...\n``` code blocks
-   * - inline `code`
-   * - convert line breaks to <br> outside code
+   * Safe formatter: code fences, inline code, and line breaks.
    */
   function formatMessage(text) {
     if (text == null) return "";
@@ -190,7 +219,6 @@
         if (p.type === "code") {
           return `<pre><code>${escapeHtml(p.content)}</code></pre>`;
         }
-        // inline `code` and line breaks
         let escaped = escapeHtml(p.content);
         escaped = escaped.replace(/`([^`\n]+)`/g, (_, c) => `<code>${c}</code>`);
         escaped = escaped.replace(/\n/g, "<br>");
@@ -215,10 +243,7 @@
         await navigator.clipboard.writeText(text);
         return true;
       }
-    } catch (e) {
-      // fall through to fallback
-    }
-    // Fallback
+    } catch (e) { /* fall through */ }
     try {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -241,8 +266,6 @@
     });
   }
 
-  /* ---------- Settings & Persistence ---------- */
-
   function safeGet(key) {
     try { return localStorage.getItem(key); } catch (e) { return null; }
   }
@@ -250,10 +273,12 @@
     try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
   }
 
+  /* ---------- Settings & Persistence ---------- */
+
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "dark");
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "light" ? "#f4fff8" : "#050d08");
+    if (meta) meta.setAttribute("content", theme === "light" ? "#F4F5F2" : "#0B0D0F");
   }
 
   function applyFontSize(size) {
@@ -264,12 +289,16 @@
     const theme = safeGet(STORAGE_KEYS.theme) || "dark";
     const font = safeGet(STORAGE_KEYS.fontSize) || "medium";
     const model = safeGet(STORAGE_KEYS.model) || SAFE_DEFAULT_MODEL;
-    const mode = safeGet(STORAGE_KEYS.mode) || "normal";
+
+    // Mode: migrate legacy "normal" → "general"
+    let mode = safeGet(STORAGE_KEYS.mode) || "general";
+    if (mode === "normal") mode = "general";
+
     const streaming = safeGet(STORAGE_KEYS.streaming) === "on";
     const codeAssist = safeGet(STORAGE_KEYS.codeAssist) === "on";
     const savedHistoryPref = safeGet(STORAGE_KEYS.saveHistory);
-    // Default ON if user has never set the preference
     const saveHistory = savedHistoryPref === null ? true : savedHistoryPref === "on";
+    const responseStyle = safeGet(STORAGE_KEYS.responseStyle) || "balanced";
 
     applyTheme(theme);
     applyFontSize(font);
@@ -279,19 +308,21 @@
     state.streaming = streaming;
     state.codeAssistOn = codeAssist;
     state.saveHistory = saveHistory;
+    state.responseStyle = responseStyle;
 
-    els.themeSelect.value = theme;
-    els.fontSizeSelect.value = font;
-    els.streamingSelect.value = streaming ? "on" : "off";
-    els.saveHistorySelect.value = saveHistory ? "on" : "off";
-
-    els.modeSelect.value = mode;
-    els.modeSelectSettings.value = mode;
-
-    updateCodeAssistButtonUI();
+    if (els.themeSelect)         els.themeSelect.value = theme;
+    if (els.fontSizeSelect)      els.fontSizeSelect.value = font;
+    if (els.streamingSelect)     els.streamingSelect.value = streaming ? "on" : "off";
+    if (els.saveHistorySelect)   els.saveHistorySelect.value = saveHistory ? "on" : "off";
+    if (els.responseStyleSelect) els.responseStyleSelect.value = responseStyle;
+    if (els.modeSelect && [...els.modeSelect.options].some((o) => o.value === mode)) {
+      els.modeSelect.value = mode;
+    }
+    if (els.codeAssistToggle)    els.codeAssistToggle.checked = !!codeAssist;
+    updateCodeBadge();
   }
 
-  /* ---------- Model Loading ---------- */
+  /* ---------- Models ---------- */
 
   function dedupeModels(list) {
     const seen = new Set();
@@ -306,7 +337,6 @@
   }
 
   function normalizeDynamicModels(raw) {
-    // Try to handle common shapes from puter.ai.listModels()
     if (!raw) return [];
     let arr = [];
     if (Array.isArray(raw)) {
@@ -316,7 +346,6 @@
     } else if (Array.isArray(raw.data)) {
       arr = raw.data;
     } else if (typeof raw === "object") {
-      // Object map: { provider: [ids] } or similar
       try {
         const flat = [];
         for (const [provider, val] of Object.entries(raw)) {
@@ -362,52 +391,45 @@
   }
 
   function prettyLabel(id) {
-    // Strip provider prefix and prettify
     const stripped = id.includes("/") ? id.split("/").slice(1).join("/") : id;
-    return stripped
-      .replace(/[-_]/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return stripped.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
-  function populateModelSelects(models) {
+  function populateModelSelect(models) {
     state.currentModels = models;
-    [els.modelSelect, els.modelSelectSettings].forEach((sel) => {
-      if (!sel) return;
-      sel.innerHTML = "";
+    if (!els.modelSelect) return;
 
-      // Group by provider
-      const groups = {};
-      for (const m of models) {
-        const g = m.group || "Other";
-        if (!groups[g]) groups[g] = [];
-        groups[g].push(m);
-      }
-      const order = ["OpenAI", "Anthropic", "Google", "xAI", "DeepSeek", "Meta", "Mistral", "Qwen", "NVIDIA", "Other"];
-      const keys = Object.keys(groups).sort((a, b) => {
-        const ai = order.indexOf(a); const bi = order.indexOf(b);
-        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-      });
+    els.modelSelect.innerHTML = "";
 
-      for (const key of keys) {
-        const og = document.createElement("optgroup");
-        og.label = key;
-        for (const m of groups[key]) {
-          const opt = document.createElement("option");
-          opt.value = m.id;
-          opt.textContent = m.label || m.id;
-          og.appendChild(opt);
-        }
-        sel.appendChild(og);
-      }
+    const groups = {};
+    for (const m of models) {
+      const g = m.group || "Other";
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(m);
+    }
+    const order = ["OpenAI", "Anthropic", "Google", "xAI", "DeepSeek", "Meta", "Mistral", "Qwen", "NVIDIA", "Other"];
+    const keys = Object.keys(groups).sort((a, b) => {
+      const ai = order.indexOf(a); const bi = order.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
     });
 
-    // Preserve / set selected model
+    for (const key of keys) {
+      const og = document.createElement("optgroup");
+      og.label = key;
+      for (const m of groups[key]) {
+        const opt = document.createElement("option");
+        opt.value = m.id;
+        opt.textContent = m.label || m.id;
+        og.appendChild(opt);
+      }
+      els.modelSelect.appendChild(og);
+    }
+
     const desired = state.selectedModel;
     const exists = models.some((m) => m.id === desired);
     const finalModel = exists ? desired : (models[0] ? models[0].id : SAFE_DEFAULT_MODEL);
     state.selectedModel = finalModel;
     els.modelSelect.value = finalModel;
-    els.modelSelectSettings.value = finalModel;
   }
 
   async function loadModels({ silent = false } = {}) {
@@ -421,16 +443,14 @@
       console.warn("[BlackCoreAI] listModels failed:", err);
     }
 
-    let combined;
-    if (dynamic && dynamic.length > 0) {
-      // Merge dynamic + fallback so user always has choices
-      combined = dedupeModels([...dynamic, ...FALLBACK_MODELS]);
-      populateModelSelects(combined);
-      if (!silent) showToast("Models refreshed.");
-    } else {
-      combined = dedupeModels(FALLBACK_MODELS);
-      populateModelSelects(combined);
-      if (!silent) showToast("Could not refresh model list. Fallback models are loaded.");
+    const combined = (dynamic && dynamic.length > 0)
+      ? dedupeModels([...dynamic, ...FALLBACK_MODELS])
+      : dedupeModels(FALLBACK_MODELS);
+
+    populateModelSelect(combined);
+
+    if (!silent) {
+      showToast(dynamic.length > 0 ? "Models refreshed." : "Fallback models loaded.");
     }
   }
 
@@ -441,7 +461,6 @@
     try {
       let data = state.messages.map((m) => ({ role: m.role, content: m.content }));
       let json = JSON.stringify(data);
-      // Trim oldest pair-by-pair if storage exceeds cap
       while (json.length > HISTORY_MAX_BYTES && data.length > 2) {
         data.shift();
         json = JSON.stringify(data);
@@ -490,29 +509,30 @@
         state.messages.push({ role: "assistant", content: m.content, el: msg });
       }
     }
-    els.regenerateBtn.disabled = !hasUserMessage();
+    if (els.regenerateBtn) els.regenerateBtn.disabled = !hasUserMessage();
     return arr.length;
   }
 
   /* ---------- Code Assist toggle ---------- */
 
-  function updateCodeAssistButtonUI() {
-    if (!els.codeAssistBtn) return;
-    els.codeAssistBtn.setAttribute("aria-pressed", state.codeAssistOn ? "true" : "false");
-    els.codeBadge.classList.toggle("badge-hidden", !state.codeAssistOn);
+  function updateCodeBadge() {
+    if (!els.codeBadge) return;
+    els.codeBadge.classList.toggle("hidden", !state.codeAssistOn);
   }
 
-  function toggleCodeAssist() {
-    state.codeAssistOn = !state.codeAssistOn;
+  function setCodeAssist(on) {
+    state.codeAssistOn = !!on;
     safeSet(STORAGE_KEYS.codeAssist, state.codeAssistOn ? "on" : "off");
-    updateCodeAssistButtonUI();
+    if (els.codeAssistToggle) els.codeAssistToggle.checked = state.codeAssistOn;
+    updateCodeBadge();
   }
 
-  /* ---------- Messages / DOM Rendering ---------- */
+  /* ---------- Rendering ---------- */
 
   function hideWelcome() {
-    if (els.welcomeMessage && els.welcomeMessage.parentNode) {
-      els.welcomeMessage.parentNode.removeChild(els.welcomeMessage);
+    if (els.welcomeScreen && els.welcomeScreen.parentNode) {
+      els.welcomeScreen.parentNode.removeChild(els.welcomeScreen);
+      els.welcomeScreen = null;
     }
   }
 
@@ -565,10 +585,8 @@
 
   function appendStreamingChunk(msgEl, chunk) {
     const bubble = msgEl.querySelector(".message-bubble");
-    // Remove typing indicator if present
     const ti = bubble.querySelector(".typing-indicator");
     if (ti) ti.remove();
-    // Track text in a data attribute for safe re-format
     const prev = bubble.getAttribute("data-text") || "";
     const next = prev + chunk;
     bubble.setAttribute("data-text", next);
@@ -591,10 +609,12 @@
   /* ---------- Prompt Building ---------- */
 
   function buildFinalPrompt(userText) {
-    const modeInstruction = MODE_INSTRUCTIONS[state.selectedMode] || MODE_INSTRUCTIONS.normal;
-    const codeExtra = state.codeAssistOn && state.selectedMode !== "code" ? "\n" + CODE_ASSIST_EXTRA : "";
+    const modeInstruction = MODE_INSTRUCTIONS[state.selectedMode] || MODE_INSTRUCTIONS.general;
+    const styleInstruction = RESPONSE_STYLE_INSTRUCTIONS[state.responseStyle] || RESPONSE_STYLE_INSTRUCTIONS.balanced;
+    const codeExtra = state.codeAssistOn && state.selectedMode !== "code" && state.selectedMode !== "debug"
+      ? "\n" + CODE_ASSIST_EXTRA
+      : "";
 
-    // Build recent context (skip the just-added user message; we add it at the end)
     const history = state.messages.slice(-MAX_CONTEXT_MESSAGES);
     let convo = "";
     for (const m of history) {
@@ -603,7 +623,7 @@
     }
 
     const finalPrompt =
-      `${modeInstruction}${codeExtra}\n\n` +
+      `${modeInstruction}\n${styleInstruction}${codeExtra}\n\n` +
       (convo ? `Recent conversation:\n${convo}\n` : "") +
       `User: ${userText}\nAssistant:`;
 
@@ -616,10 +636,8 @@
     if (response == null) return "";
     if (typeof response === "string") return response;
 
-    // Direct text fields
     if (typeof response.text === "string") return response.text;
 
-    // message.content
     if (response.message) {
       const m = response.message;
       if (typeof m === "string") return m;
@@ -632,7 +650,6 @@
       }
     }
 
-    // content
     if (typeof response.content === "string") return response.content;
     if (Array.isArray(response.content)) {
       return response.content
@@ -641,7 +658,6 @@
         .join("");
     }
 
-    // OpenAI-style choices
     if (Array.isArray(response.choices) && response.choices[0]) {
       const ch = response.choices[0];
       if (ch.message && typeof ch.message.content === "string") return ch.message.content;
@@ -649,19 +665,10 @@
       if (ch.delta && typeof ch.delta.content === "string") return ch.delta.content;
     }
 
-    // toString fallback (avoid [object Object])
-    try {
-      const s = JSON.stringify(response);
-      if (s && s !== "{}" && s !== "[]") {
-        // Heuristic: if it stringifies cleanly, surface that as last resort
-        return "";
-      }
-    } catch (e) { /* ignore */ }
-
     return "";
   }
 
-  /* ---------- Send Message Flow ---------- */
+  /* ---------- Send Flow ---------- */
 
   async function sendMessage(opts = {}) {
     if (state.sending) return;
@@ -670,13 +677,11 @@
     let userText;
 
     if (isRegenerate) {
-      // Use the last user message; remove the last assistant message if any
       const lastUserIdx = [...state.messages].reverse().findIndex((m) => m.role === "user");
       if (lastUserIdx === -1) return;
       const lastUser = state.messages[state.messages.length - 1 - lastUserIdx];
       userText = lastUser.content;
 
-      // Remove last assistant entry from state and DOM if present
       for (let i = state.messages.length - 1; i >= 0; i--) {
         if (state.messages[i].role === "assistant") {
           const m = state.messages[i];
@@ -690,13 +695,11 @@
       if (!userText) return;
     }
 
-    // Verify Puter.js is loaded
     if (typeof puter === "undefined" || !puter.ai || typeof puter.ai.chat !== "function") {
       renderErrorMessage("Puter.js did not load. Please check your internet connection and refresh the page.");
       return;
     }
 
-    // Render user message (only when not regenerating; regenerate keeps existing user bubble)
     if (!isRegenerate) {
       const userEl = renderUserMessage(userText);
       state.messages.push({ role: "user", content: userText, el: userEl });
@@ -705,11 +708,9 @@
       updateCharCount();
       saveChatHistory();
     } else {
-      // Regenerate already removed the previous assistant entry — persist that change too
       saveChatHistory();
     }
 
-    // Lock UI
     setSending(true);
 
     const aiMsgEl = renderAiPlaceholder();
@@ -722,8 +723,6 @@
       aiText = await callPuterAi(finalPrompt, state.selectedModel, aiMsgEl);
     } catch (err) {
       console.warn("[BlackCoreAI] Primary model failed:", err);
-
-      // Try secondary default if primary fails and primary isn't already secondary
       const primary = state.selectedModel;
       try {
         if (primary !== SAFE_DEFAULT_MODEL) {
@@ -739,7 +738,6 @@
     }
 
     if (!aiText || !aiText.trim()) {
-      // Replace placeholder with error
       const bubble = aiMsgEl.querySelector(".message-bubble");
       bubble.innerHTML = "";
       aiMsgEl.classList.add("message-error");
@@ -760,7 +758,6 @@
   }
 
   async function callPuterAi(prompt, model, msgEl) {
-    // Try streaming first if enabled
     if (state.streaming) {
       try {
         const streamResp = await puter.ai.chat(prompt, { model, stream: true });
@@ -775,7 +772,6 @@
           }
           if (acc) return acc;
         } else if (streamResp) {
-          // Not actually streamed; treat as normal
           const text = extractResponseText(streamResp);
           if (text) return text;
         }
@@ -784,7 +780,6 @@
       }
     }
 
-    // Normal call
     const response = await puter.ai.chat(prompt, { model });
     const text = extractResponseText(response);
     return text || "";
@@ -792,10 +787,9 @@
 
   function setSending(sending) {
     state.sending = sending;
-    els.sendBtn.disabled = sending;
-    els.regenerateBtn.disabled = sending || !hasUserMessage();
-    els.userInput.disabled = sending;
-    els.sendBtn.textContent = sending ? "Thinking..." : "Send";
+    if (els.sendBtn)       els.sendBtn.disabled = sending;
+    if (els.regenerateBtn) els.regenerateBtn.disabled = sending || !hasUserMessage();
+    if (els.userInput)     els.userInput.disabled = sending;
   }
 
   function hasUserMessage() {
@@ -804,19 +798,39 @@
 
   /* ---------- Chat Utilities ---------- */
 
-  function clearChat() {
+  function buildWelcomeNode() {
+    const wrap = document.createElement("div");
+    wrap.id = "welcomeScreen";
+    wrap.className = "welcome-screen";
+    wrap.innerHTML = `
+      <div class="welcome-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M12 2.5 L20.5 7 L20.5 17 L12 21.5 L3.5 17 L3.5 7 Z"/>
+          <path d="M12 8.5 L15.5 12 L12 15.5 L8.5 12 Z" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <h2 class="welcome-title">Welcome to BlackCoreAI</h2>
+      <p class="welcome-subtitle">A private AI workspace tuned for elite professionals, developers, and power users. Choose a model, pick a mode, and begin.</p>
+      <div class="welcome-prompts" role="list" aria-label="Suggested prompts">
+        <button class="prompt-chip" type="button" data-prompt="Write a clean, production-ready Python function that validates an email address and returns a structured result." role="listitem"><span class="prompt-chip-icon" aria-hidden="true">›</span><span>Write a clean Python email validator</span></button>
+        <button class="prompt-chip" type="button" data-prompt="Draft an elegant, professional landing page hero section with a strong headline, subheadline, and CTA copy for a premium AI product." role="listitem"><span class="prompt-chip-icon" aria-hidden="true">›</span><span>Draft a premium landing-page hero</span></button>
+        <button class="prompt-chip" type="button" data-prompt="Explain how transformers work in large language models, in simple but accurate terms, with one analogy." role="listitem"><span class="prompt-chip-icon" aria-hidden="true">›</span><span>Explain how transformers work</span></button>
+        <button class="prompt-chip" type="button" data-prompt="Summarize this paragraph into 3 concise bullet points: " role="listitem"><span class="prompt-chip-icon" aria-hidden="true">›</span><span>Summarize text into 3 bullets</span></button>
+      </div>
+    `;
+    return wrap;
+  }
+
+  function clearChat({ silent = false } = {}) {
     state.messages = [];
     els.chatArea.innerHTML = "";
-    // Re-add welcome
-    const sys = document.createElement("div");
-    sys.className = "message message-system";
-    sys.id = "welcomeMessage";
-    sys.innerHTML = `<div class="message-bubble"><p>Welcome to BlackCoreAI. Choose a model, type anything, or enable Code Assistant for coding help.</p></div>`;
-    els.chatArea.appendChild(sys);
-    els.welcomeMessage = sys;
-    els.regenerateBtn.disabled = true;
+    const welcome = buildWelcomeNode();
+    els.chatArea.appendChild(welcome);
+    els.welcomeScreen = welcome;
+    wirePromptChips();
+    if (els.regenerateBtn) els.regenerateBtn.disabled = true;
     clearSavedChat();
-    showToast("Chat cleared.");
+    if (!silent) showToast("New chat started.");
   }
 
   function buildPlainTextChat() {
@@ -830,20 +844,14 @@
 
   async function copyWholeChat() {
     const text = buildPlainTextChat();
-    if (!text) {
-      showToast("No chat to copy.");
-      return;
-    }
+    if (!text) { showToast("No chat to copy."); return; }
     const ok = await copyToClipboard(text);
     showToast(ok ? "Chat copied." : "Copy failed.");
   }
 
   function exportChat() {
     const text = buildPlainTextChat();
-    if (!text) {
-      showToast("No chat to export.");
-      return;
-    }
+    if (!text) { showToast("No chat to export."); return; }
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -856,16 +864,18 @@
     showToast("Chat exported.");
   }
 
-  /* ---------- Textarea & Input ---------- */
+  /* ---------- Composer ---------- */
 
   function autosizeTextarea() {
     const ta = els.userInput;
+    if (!ta) return;
     ta.style.height = "auto";
-    const max = 180;
+    const max = 200;
     ta.style.height = Math.min(ta.scrollHeight, max) + "px";
   }
 
   function updateCharCount() {
+    if (!els.userInput || !els.charCount) return;
     const len = els.userInput.value.length;
     const max = els.userInput.maxLength || 8000;
     els.charCount.textContent = `${len} / ${max}`;
@@ -883,137 +893,197 @@
     els.settingsModal.setAttribute("aria-hidden", "true");
   }
 
+  /* ---------- Welcome Prompt Chips ---------- */
+
+  function wirePromptChips() {
+    const chips = document.querySelectorAll(".prompt-chip");
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const prompt = chip.getAttribute("data-prompt") || "";
+        if (!prompt) return;
+        els.userInput.value = prompt;
+        els.userInput.focus();
+        autosizeTextarea();
+        updateCharCount();
+        // Place caret at end
+        const len = prompt.length;
+        try { els.userInput.setSelectionRange(len, len); } catch (e) { /* ignore */ }
+      });
+    });
+  }
+
+  /* ---------- Theme Toggle ---------- */
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    safeSet(STORAGE_KEYS.theme, next);
+    if (els.themeSelect) els.themeSelect.value = next;
+  }
+
   /* ---------- Event Wiring ---------- */
 
   function wireEvents() {
-    // Send button
-    els.sendBtn.addEventListener("click", () => sendMessage());
+    // Composer
+    if (els.sendBtn)       els.sendBtn.addEventListener("click", () => sendMessage());
+    if (els.regenerateBtn) els.regenerateBtn.addEventListener("click", () => sendMessage({ regenerate: true }));
 
-    // Regenerate
-    els.regenerateBtn.addEventListener("click", () => sendMessage({ regenerate: true }));
+    if (els.userInput) {
+      els.userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      els.userInput.addEventListener("input", () => {
+        autosizeTextarea();
+        updateCharCount();
+      });
+    }
 
-    // Enter to send, Shift+Enter newline
-    els.userInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
+    // Model
+    if (els.modelSelect) {
+      els.modelSelect.addEventListener("change", () => {
+        state.selectedModel = els.modelSelect.value;
+        safeSet(STORAGE_KEYS.model, state.selectedModel);
+      });
+    }
 
-    els.userInput.addEventListener("input", () => {
-      autosizeTextarea();
-      updateCharCount();
-    });
+    // Mode
+    if (els.modeSelect) {
+      els.modeSelect.addEventListener("change", () => {
+        state.selectedMode = els.modeSelect.value;
+        safeSet(STORAGE_KEYS.mode, state.selectedMode);
+      });
+    }
 
-    // Model select (main)
-    els.modelSelect.addEventListener("change", () => {
-      state.selectedModel = els.modelSelect.value;
-      els.modelSelectSettings.value = state.selectedModel;
-      safeSet(STORAGE_KEYS.model, state.selectedModel);
-    });
-
-    // Model select (settings)
-    els.modelSelectSettings.addEventListener("change", () => {
-      state.selectedModel = els.modelSelectSettings.value;
-      els.modelSelect.value = state.selectedModel;
-      safeSet(STORAGE_KEYS.model, state.selectedModel);
-    });
-
-    // Mode select (main)
-    els.modeSelect.addEventListener("change", () => {
-      state.selectedMode = els.modeSelect.value;
-      els.modeSelectSettings.value = state.selectedMode;
-      safeSet(STORAGE_KEYS.mode, state.selectedMode);
-    });
-
-    // Mode select (settings)
-    els.modeSelectSettings.addEventListener("change", () => {
-      state.selectedMode = els.modeSelectSettings.value;
-      els.modeSelect.value = state.selectedMode;
-      safeSet(STORAGE_KEYS.mode, state.selectedMode);
-    });
-
-    // Refresh models (both)
+    // Refresh models
     const onRefresh = async () => {
-      els.refreshModelsBtn.disabled = true;
-      els.refreshModelsBtnSettings.disabled = true;
-      try {
-        await loadModels();
-      } finally {
-        els.refreshModelsBtn.disabled = false;
-        els.refreshModelsBtnSettings.disabled = false;
+      if (els.refreshModelsBtn)         els.refreshModelsBtn.disabled = true;
+      if (els.refreshModelsBtnSettings) els.refreshModelsBtnSettings.disabled = true;
+      try { await loadModels(); }
+      finally {
+        if (els.refreshModelsBtn)         els.refreshModelsBtn.disabled = false;
+        if (els.refreshModelsBtnSettings) els.refreshModelsBtnSettings.disabled = false;
       }
     };
-    els.refreshModelsBtn.addEventListener("click", onRefresh);
-    els.refreshModelsBtnSettings.addEventListener("click", onRefresh);
+    if (els.refreshModelsBtn)         els.refreshModelsBtn.addEventListener("click", onRefresh);
+    if (els.refreshModelsBtnSettings) els.refreshModelsBtnSettings.addEventListener("click", onRefresh);
 
-    // Code assist toggle
-    els.codeAssistBtn.addEventListener("click", toggleCodeAssist);
+    // Code assist toggle (checkbox)
+    if (els.codeAssistToggle) {
+      els.codeAssistToggle.addEventListener("change", () => setCodeAssist(els.codeAssistToggle.checked));
+    }
 
     // Settings open/close
-    els.settingsBtn.addEventListener("click", openSettings);
-    els.closeSettingsBtn.addEventListener("click", closeSettings);
-    els.settingsModal.addEventListener("click", (e) => {
-      if (e.target === els.settingsModal) closeSettings();
-    });
+    if (els.settingsBtn)      els.settingsBtn.addEventListener("click", openSettings);
+    if (els.closeSettingsBtn) els.closeSettingsBtn.addEventListener("click", closeSettings);
+    if (els.settingsModal) {
+      els.settingsModal.addEventListener("click", (e) => {
+        if (e.target === els.settingsModal) closeSettings();
+      });
+    }
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && els.settingsModal.classList.contains("is-open")) {
+      if (e.key === "Escape" && els.settingsModal && els.settingsModal.classList.contains("is-open")) {
         closeSettings();
       }
     });
 
-    // Theme
-    els.themeSelect.addEventListener("change", () => {
-      const t = els.themeSelect.value;
-      applyTheme(t);
-      safeSet(STORAGE_KEYS.theme, t);
-    });
+    // Header New Chat
+    if (els.newChatBtn) els.newChatBtn.addEventListener("click", () => clearChat());
+
+    // Header Theme toggle
+    if (els.themeToggleBtn) els.themeToggleBtn.addEventListener("click", toggleTheme);
+
+    // Theme select (settings)
+    if (els.themeSelect) {
+      els.themeSelect.addEventListener("change", () => {
+        const t = els.themeSelect.value;
+        applyTheme(t);
+        safeSet(STORAGE_KEYS.theme, t);
+      });
+    }
 
     // Font size
-    els.fontSizeSelect.addEventListener("change", () => {
-      const f = els.fontSizeSelect.value;
-      applyFontSize(f);
-      safeSet(STORAGE_KEYS.fontSize, f);
-    });
+    if (els.fontSizeSelect) {
+      els.fontSizeSelect.addEventListener("change", () => {
+        const f = els.fontSizeSelect.value;
+        applyFontSize(f);
+        safeSet(STORAGE_KEYS.fontSize, f);
+      });
+    }
+
+    // Response style
+    if (els.responseStyleSelect) {
+      els.responseStyleSelect.addEventListener("change", () => {
+        state.responseStyle = els.responseStyleSelect.value;
+        safeSet(STORAGE_KEYS.responseStyle, state.responseStyle);
+      });
+    }
 
     // Streaming
-    els.streamingSelect.addEventListener("change", () => {
-      state.streaming = els.streamingSelect.value === "on";
-      safeSet(STORAGE_KEYS.streaming, state.streaming ? "on" : "off");
-    });
+    if (els.streamingSelect) {
+      els.streamingSelect.addEventListener("change", () => {
+        state.streaming = els.streamingSelect.value === "on";
+        safeSet(STORAGE_KEYS.streaming, state.streaming ? "on" : "off");
+      });
+    }
 
-    // Save Chat History
-    els.saveHistorySelect.addEventListener("change", () => {
-      const on = els.saveHistorySelect.value === "on";
-      state.saveHistory = on;
-      safeSet(STORAGE_KEYS.saveHistory, on ? "on" : "off");
-      if (on) {
-        saveChatHistory();
-        showToast("Chat history saving enabled.");
-      } else {
-        clearSavedChat();
-        showToast("Saved chat history removed from this device.");
-      }
-    });
+    // Save history
+    if (els.saveHistorySelect) {
+      els.saveHistorySelect.addEventListener("change", () => {
+        const on = els.saveHistorySelect.value === "on";
+        state.saveHistory = on;
+        safeSet(STORAGE_KEYS.saveHistory, on ? "on" : "off");
+        if (on) {
+          saveChatHistory();
+          showToast("Chat history saving enabled.");
+        } else {
+          clearSavedChat();
+          showToast("Saved chat history removed from this device.");
+        }
+      });
+    }
 
-    // Clear chat
-    els.clearChatBtn.addEventListener("click", () => {
-      if (confirm("Clear all chat messages?")) clearChat();
-    });
+    // Utility row + settings duplicates
+    const wireClear = (btn) => {
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        if (state.messages.length === 0) {
+          showToast("Chat is already empty.");
+          return;
+        }
+        if (confirm("Clear all chat messages?")) clearChat();
+      });
+    };
+    wireClear(els.clearChatBtn);
+    wireClear(els.clearChatBtnSettings);
 
-    // Copy chat
-    els.copyChatBtn.addEventListener("click", copyWholeChat);
+    if (els.utilityNewChatBtn) els.utilityNewChatBtn.addEventListener("click", () => clearChat());
 
-    // Export chat
-    els.exportChatBtn.addEventListener("click", exportChat);
+    if (els.copyChatBtn)         els.copyChatBtn.addEventListener("click", copyWholeChat);
+    if (els.copyChatBtnSettings) els.copyChatBtnSettings.addEventListener("click", copyWholeChat);
+
+    if (els.exportChatBtn)         els.exportChatBtn.addEventListener("click", exportChat);
+    if (els.exportChatBtnSettings) els.exportChatBtnSettings.addEventListener("click", exportChat);
 
     // GCash copy
-    els.copyGcashBtn.addEventListener("click", async () => {
-      const ok = await copyToClipboard("09482887486");
-      els.gcashCopyStatus.textContent = ok ? "GCash number copied!" : "Could not copy. Number: 09482887486";
-      showToast(ok ? "GCash number copied!" : "Copy failed. Number visible above.");
-      setTimeout(() => { els.gcashCopyStatus.textContent = ""; }, 3000);
-    });
+    if (els.copyGcashBtn) {
+      els.copyGcashBtn.addEventListener("click", async () => {
+        const ok = await copyToClipboard("09482887486");
+        if (els.gcashCopyStatus) {
+          els.gcashCopyStatus.textContent = ok ? "GCash number copied." : "Could not copy. Number: 09482887486";
+        }
+        showToast(ok ? "GCash number copied." : "Copy failed. Number visible above.");
+        setTimeout(() => {
+          if (els.gcashCopyStatus) els.gcashCopyStatus.textContent = "";
+        }, 3000);
+      });
+    }
+
+    // Welcome prompt chips
+    wirePromptChips();
   }
 
   /* ---------- Boot ---------- */
@@ -1033,7 +1103,7 @@
     updateCharCount();
 
     // Populate selects with fallback first so UI is responsive even if Puter is slow
-    populateModelSelects(dedupeModels(FALLBACK_MODELS));
+    populateModelSelect(dedupeModels(FALLBACK_MODELS));
 
     // Restore previous chat if user opted in (default ON)
     if (state.saveHistory) {
@@ -1043,16 +1113,12 @@
       }
     }
 
-    // Check Puter availability (non-blocking warn)
+    // Check Puter availability (give it a moment if it loads late)
     if (typeof puter === "undefined") {
-      // Try waiting briefly for late load
       await new Promise((r) => setTimeout(r, 600));
     }
 
-    if (!checkPuterReady()) {
-      // We still let the user adjust settings; sendMessage will show the error too
-      return;
-    }
+    if (!checkPuterReady()) return;
 
     // Try dynamic models silently on boot
     await loadModels({ silent: true });
