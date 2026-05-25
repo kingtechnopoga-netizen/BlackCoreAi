@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#050d08" />
+<meta name="description" content="BlackCoreAI - Premium Black-Hat AI Assistant powered by Puter.js" />
+<title>BlackCoreAI - Premium Black-Hat AI Assistant</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050d08'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='monospace' font-size='28' font-weight='bold' fill='%2300ff88'%3EBC%3C/text%3E%3C/svg%3E" />
+<script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+
+<header class="app-header" role="banner">
+  <div class="header-left">
+    <div class="logo-badge" aria-hidden="true">BC</div>
+    <div class="header-text">
+      <h1 class="app-title">BlackCoreAI</h1>
+      <p class="app-subtitle">Premium Black-Hat AI Assistant</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <button id="settingsBtn" class="icon-btn" aria-label="Open settings" title="Settings">
+      <span class="gear">⚙</span>
+    </button>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <section class="control-bar" aria-label="Chat controls">
+    <div class="control-row">
+      <label class="control-field">
+        <span class="control-label">Model</span>
+        <select id="modelSelect" class="select-input" aria-label="Select AI model"></select>
+      </label>
+
+      <label class="control-field">
+        <span class="control-label">Mode</span>
+        <select id="modeSelect" class="select-input" aria-label="Select chat mode">
+          <option value="normal">Normal Chat</option>
+          <option value="code">Code Assistant</option>
+          <option value="research">Web Research Style</option>
+          <option value="creative">Creative Writer</option>
+          <option value="tagalog">Tagalog Assistant</option>
+          <option value="beginner">Explain Like Beginner</option>
+          <option value="business">Business Helper</option>
+          <option value="prompt">Prompt Engineer</option>
+          <option value="social">Social Media Helper</option>
+          <option value="cyber">Cyber Study Mode</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="control-row control-row-buttons">
+      <button id="refreshModelsBtn" class="btn btn-ghost" type="button" title="Refresh available models">
+        <span class="btn-icon">↻</span> Refresh Models
+      </button>
+      <button id="codeAssistBtn" class="btn btn-ghost" type="button" aria-pressed="false" title="Toggle Code Assistant">
+        <span class="btn-icon">{ }</span> Code Assistant
+      </button>
+      <span id="codeBadge" class="badge badge-hidden" aria-live="polite">CODE MODE ON</span>
+    </div>
+
+    <p class="model-helper">Model availability depends on Puter.js support. If one fails, try another.</p>
+  </section>
+
+  <section id="chatArea" class="chat-area" aria-label="Chat messages" aria-live="polite">
+    <div class="message message-system" id="welcomeMessage">
+      <div class="message-bubble">
+        <p>Welcome to BlackCoreAI. Choose a model, type anything, or enable Code Assistant for coding help.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="input-area" aria-label="Message input">
+    <div class="input-wrapper">
+      <textarea
+        id="userInput"
+        class="user-input"
+        rows="1"
+        placeholder="Ask BlackCoreAI anything..."
+        aria-label="Type your message"
+        maxlength="8000"
+      ></textarea>
+      <div class="input-row">
+        <span id="charCount" class="char-count">0 / 8000</span>
+        <div class="input-actions">
+          <button id="regenerateBtn" class="btn btn-ghost btn-small" type="button" disabled title="Regenerate last response">
+            ↺ Regenerate
+          </button>
+          <button id="sendBtn" class="btn btn-primary" type="button" title="Send message">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <p>Powered by puter.js</p>
+</footer>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="settingsTitle">
+  <div class="modal" role="document">
+    <div class="modal-header">
+      <h2 id="settingsTitle">Settings</h2>
+      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings" title="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="setting-group">
+        <label class="setting-label" for="themeSelect">Theme</label>
+        <select id="themeSelect" class="select-input">
+          <option value="dark">Dark Mode</option>
+          <option value="light">Light Mode</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label" for="modelSelectSettings">Model</label>
+        <select id="modelSelectSettings" class="select-input"></select>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label" for="modeSelectSettings">Mode</label>
+        <select id="modeSelectSettings" class="select-input">
+          <option value="normal">Normal Chat</option>
+          <option value="code">Code Assistant</option>
+          <option value="research">Web Research Style</option>
+          <option value="creative">Creative Writer</option>
+          <option value="tagalog">Tagalog Assistant</option>
+          <option value="beginner">Explain Like Beginner</option>
+          <option value="business">Business Helper</option>
+          <option value="prompt">Prompt Engineer</option>
+          <option value="social">Social Media Helper</option>
+          <option value="cyber">Cyber Study Mode</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label" for="fontSizeSelect">Font Size</label>
+        <select id="fontSizeSelect" class="select-input">
+          <option value="small">Small</option>
+          <option value="medium" selected>Medium</option>
+          <option value="large">Large</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label" for="streamingSelect">Streaming Response</label>
+        <select id="streamingSelect" class="select-input">
+          <option value="off" selected>Off</option>
+          <option value="on">On</option>
+        </select>
+      </div>
+
+      <div class="setting-actions">
+        <button id="clearChatBtn" class="btn btn-danger" type="button">Clear Chat</button>
+        <button id="copyChatBtn" class="btn btn-ghost" type="button">Copy Chat</button>
+        <button id="exportChatBtn" class="btn btn-ghost" type="button">Export Chat</button>
+        <button id="refreshModelsBtnSettings" class="btn btn-ghost" type="button">Refresh Models</button>
+      </div>
+
+      <div class="donation-card">
+        <h3 class="donation-title">Support BlackCoreAI</h3>
+        <p class="donation-text">
+          If you like this chatbot and want to support development, you can donate any amount via GCash.
+        </p>
+        <div class="donation-row">
+          <span class="donation-label">GCash:</span>
+          <code id="gcashNumber" class="gcash-number">09482887486</code>
+          <button id="copyGcashBtn" class="btn btn-primary btn-small" type="button">Copy</button>
+        </div>
+        <p id="gcashCopyStatus" class="copy-status" aria-live="polite"></p>
+      </div>
+
+      <div class="privacy-note">
+        <h3 class="note-title">Privacy Note</h3>
+        <p>
+          BlackCoreAI is a static frontend app. Your messages are sent to Puter.js to access AI models.
+          By default, this app does not save your chat history permanently — it lives only in this session.
+          Only your theme, font size, model, mode, and streaming preference are stored locally.
+          Do not share private or sensitive information.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
