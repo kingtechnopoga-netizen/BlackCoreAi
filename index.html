@@ -2,78 +2,176 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-<meta name="theme-color" content="#050d08" />
-<meta name="description" content="BlackCoreAI - Premium Black-Hat AI Assistant powered by Puter.js" />
-<title>BlackCoreAI - Premium Black-Hat AI Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0D0F" />
+<meta name="description" content="BlackCoreAI — A premium private AI operating system for elite professionals, developers, and power users." />
+<meta name="color-scheme" content="dark light" />
+<title>BlackCoreAI — Private AI Operating System</title>
 <link rel="stylesheet" href="style.css" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050d08'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='monospace' font-size='28' font-weight='bold' fill='%2300ff88'%3EBC%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://js.puter.com" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0D0F'/%3E%3Cpath d='M16 5 L26 10.5 L26 21.5 L16 27 L6 21.5 L6 10.5 Z' fill='none' stroke='%23C6A96B' stroke-width='1.4' stroke-linejoin='round'/%3E%3Cpath d='M16 11 L21 16 L16 21 L11 16 Z' fill='%23C6A96B'/%3E%3C/svg%3E" />
 <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
 
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
 <header class="app-header" role="banner">
   <div class="header-left">
-    <div class="logo-badge" aria-hidden="true">BC</div>
+    <div class="logo-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M12 2.5 L20.5 7 L20.5 17 L12 21.5 L3.5 17 L3.5 7 Z"/>
+        <path d="M12 8.5 L15.5 12 L12 15.5 L8.5 12 Z" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
     <div class="header-text">
-      <h1 class="app-title">BlackCoreAI</h1>
-      <p class="app-subtitle">Premium Black-Hat AI Assistant</p>
+      <h1 class="app-title">BlackCore<span class="accent-dot">AI</span></h1>
+      <p class="app-tagline">Private AI · Operating System</p>
     </div>
   </div>
   <div class="header-right">
+    <button id="newChatBtn" class="icon-btn" aria-label="New chat" title="New chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+    </button>
+    <button id="themeToggleBtn" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </button>
     <button id="settingsBtn" class="icon-btn" aria-label="Open settings" title="Settings">
-      <span class="gear">⚙</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+      </svg>
     </button>
   </div>
 </header>
 
+<!-- =========================================================
+     MAIN
+     ========================================================= -->
 <main class="app-main">
 
+  <!-- Control Bar -->
   <section class="control-bar" aria-label="Chat controls">
     <div class="control-row">
-      <label class="control-field">
-        <span class="control-label">Model</span>
+      <div class="control-field">
+        <label class="control-label" for="modelSelect">Model</label>
         <select id="modelSelect" class="select-input" aria-label="Select AI model"></select>
-      </label>
+      </div>
 
-      <label class="control-field">
-        <span class="control-label">Mode</span>
+      <div class="control-field">
+        <label class="control-label" for="modeSelect">Mode</label>
         <select id="modeSelect" class="select-input" aria-label="Select chat mode">
-          <option value="normal">Normal Chat</option>
-          <option value="code">Code Assistant</option>
-          <option value="research">Web Research Style</option>
+          <option value="general">General Chat</option>
+          <option value="code">Coding Assistant</option>
+          <option value="debug">Debugging Mode</option>
           <option value="creative">Creative Writer</option>
-          <option value="tagalog">Tagalog Assistant</option>
-          <option value="beginner">Explain Like Beginner</option>
-          <option value="business">Business Helper</option>
           <option value="prompt">Prompt Engineer</option>
-          <option value="social">Social Media Helper</option>
-          <option value="cyber">Cyber Study Mode</option>
+          <option value="study">Study Helper</option>
+          <option value="business">Business Mode</option>
+          <option value="summarizer">Summarizer</option>
+          <option value="translator">Translator</option>
+          <option value="tagalog">Tagalog Mode</option>
         </select>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <label class="toggle-label" for="codeAssistToggle">
+        <span class="toggle-label-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>
+          </svg>
+        </span>
+        <span class="toggle-label-text">
+          <span class="toggle-label-title">Code Assistant</span>
+          <span class="toggle-label-desc">Enhance any mode with focused code help</span>
+        </span>
       </label>
+      <span class="switch">
+        <input type="checkbox" id="codeAssistToggle" aria-label="Toggle Code Assistant" />
+        <span class="switch-slider" aria-hidden="true"></span>
+      </span>
     </div>
 
-    <div class="control-row control-row-buttons">
-      <button id="refreshModelsBtn" class="btn btn-ghost" type="button" title="Refresh available models">
-        <span class="btn-icon">↻</span> Refresh Models
-      </button>
-      <button id="codeAssistBtn" class="btn btn-ghost" type="button" aria-pressed="false" title="Toggle Code Assistant">
-        <span class="btn-icon">{ }</span> Code Assistant
-      </button>
-      <span id="codeBadge" class="badge badge-hidden" aria-live="polite">CODE MODE ON</span>
-    </div>
-
-    <p class="model-helper">Model availability depends on Puter.js support. If one fails, try another.</p>
+    <p class="bar-helper">
+      <span id="codeBadge" class="mode-badge hidden" aria-live="polite">Code Mode</span>
+      <span class="bar-helper-text">Model availability depends on Puter.js access.</span>
+      <button id="refreshModelsBtn" type="button" class="bar-helper-link">Refresh models</button>
+    </p>
   </section>
 
+  <!-- Chat Area -->
   <section id="chatArea" class="chat-area" aria-label="Chat messages" aria-live="polite">
-    <div class="message message-system" id="welcomeMessage">
-      <div class="message-bubble">
-        <p>Welcome to BlackCoreAI. Choose a model, type anything, or enable Code Assistant for coding help.</p>
+    <div id="welcomeScreen" class="welcome-screen">
+      <div class="welcome-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M12 2.5 L20.5 7 L20.5 17 L12 21.5 L3.5 17 L3.5 7 Z"/>
+          <path d="M12 8.5 L15.5 12 L12 15.5 L8.5 12 Z" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <h2 class="welcome-title">Welcome to BlackCoreAI</h2>
+      <p class="welcome-subtitle">A private AI workspace tuned for elite professionals, developers, and power users. Choose a model, pick a mode, and begin.</p>
+
+      <div class="welcome-prompts" role="list" aria-label="Suggested prompts">
+        <button class="prompt-chip" type="button" data-prompt="Write a clean, production-ready Python function that validates an email address and returns a structured result." role="listitem">
+          <span class="prompt-chip-icon" aria-hidden="true">›</span>
+          <span>Write a clean Python email validator</span>
+        </button>
+        <button class="prompt-chip" type="button" data-prompt="Draft an elegant, professional landing page hero section with a strong headline, subheadline, and CTA copy for a premium AI product." role="listitem">
+          <span class="prompt-chip-icon" aria-hidden="true">›</span>
+          <span>Draft a premium landing-page hero</span>
+        </button>
+        <button class="prompt-chip" type="button" data-prompt="Explain how transformers work in large language models, in simple but accurate terms, with one analogy." role="listitem">
+          <span class="prompt-chip-icon" aria-hidden="true">›</span>
+          <span>Explain how transformers work</span>
+        </button>
+        <button class="prompt-chip" type="button" data-prompt="Summarize this paragraph into 3 concise bullet points: " role="listitem">
+          <span class="prompt-chip-icon" aria-hidden="true">›</span>
+          <span>Summarize text into 3 bullets</span>
+        </button>
       </div>
     </div>
   </section>
 
+  <!-- Utility Toolbar -->
+  <section class="utility-row" aria-label="Chat utilities">
+    <button id="utilityNewChatBtn" class="btn btn-ghost btn-sm" type="button" title="Start a new chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      New Chat
+    </button>
+    <button id="copyChatBtn" class="btn btn-ghost btn-sm" type="button" title="Copy entire chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+        <rect x="9" y="9" width="11" height="11" rx="2"/>
+        <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+      </svg>
+      Copy Chat
+    </button>
+    <button id="exportChatBtn" class="btn btn-ghost btn-sm" type="button" title="Export chat as file">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      Export
+    </button>
+    <button id="clearChatBtn" class="btn btn-ghost btn-sm btn-danger-subtle" type="button" title="Clear all messages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+      </svg>
+      Clear
+    </button>
+  </section>
+
+  <!-- Composer -->
   <section class="input-area" aria-label="Message input">
     <div class="input-wrapper">
       <textarea
@@ -85,13 +183,19 @@
         maxlength="8000"
       ></textarea>
       <div class="input-row">
-        <span id="charCount" class="char-count">0 / 8000</span>
+        <div class="input-meta">
+          <span id="charCount" class="char-count">0 / 8000</span>
+        </div>
         <div class="input-actions">
-          <button id="regenerateBtn" class="btn btn-ghost btn-small" type="button" disabled title="Regenerate last response">
-            ↺ Regenerate
+          <button id="regenerateBtn" class="icon-btn icon-btn-sm" type="button" disabled aria-label="Regenerate last response" title="Regenerate last response">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/>
+            </svg>
           </button>
-          <button id="sendBtn" class="btn btn-primary" type="button" title="Send message">
-            Send
+          <button id="sendBtn" class="btn-send" type="button" aria-label="Send message" title="Send message">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -100,110 +204,138 @@
 </main>
 
 <footer class="app-footer">
-  <p>Powered by puter.js</p>
+  <p>
+    <strong>BlackCoreAI</strong>
+    <span class="accent-dot">·</span>
+    Powered by Puter.js
+    <span class="accent-dot">·</span>
+    v1.0
+  </p>
 </footer>
 
-<!-- Settings Modal -->
-<div id="settingsModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="settingsTitle">
+<!-- =========================================================
+     SETTINGS MODAL
+     ========================================================= -->
+<div id="settingsModal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="settingsTitle" aria-modal="true">
   <div class="modal" role="document">
     <div class="modal-header">
-      <h2 id="settingsTitle">Settings</h2>
-      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings" title="Close">✕</button>
+      <div class="modal-title-group">
+        <h2 id="settingsTitle">Settings</h2>
+        <p class="modal-subtitle">Tailor your BlackCoreAI experience</p>
+      </div>
+      <button id="closeSettingsBtn" class="icon-btn" aria-label="Close settings" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
     <div class="modal-body">
 
-      <div class="setting-group">
-        <label class="setting-label" for="themeSelect">Theme</label>
-        <select id="themeSelect" class="select-input">
-          <option value="dark">Dark Mode</option>
-          <option value="light">Light Mode</option>
-        </select>
+      <!-- Appearance -->
+      <div class="settings-section">
+        <h3 class="section-title">Appearance</h3>
+
+        <div class="setting-group">
+          <label class="setting-label" for="themeSelect">Theme</label>
+          <select id="themeSelect" class="select-input">
+            <option value="dark">Dark Mode</option>
+            <option value="light">Light Mode</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label" for="fontSizeSelect">Font Size</label>
+          <select id="fontSizeSelect" class="select-input">
+            <option value="small">Small</option>
+            <option value="medium" selected>Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
       </div>
 
-      <div class="setting-group">
-        <label class="setting-label" for="modelSelectSettings">Model</label>
-        <select id="modelSelectSettings" class="select-input"></select>
+      <!-- Behavior -->
+      <div class="settings-section">
+        <h3 class="section-title">Behavior</h3>
+
+        <div class="setting-group">
+          <label class="setting-label" for="responseStyleSelect">Response Style</label>
+          <select id="responseStyleSelect" class="select-input">
+            <option value="balanced" selected>Balanced</option>
+            <option value="concise">Concise</option>
+            <option value="detailed">Detailed</option>
+            <option value="creative">Creative</option>
+          </select>
+          <p class="setting-help">Sets the tone, length, and depth of AI replies.</p>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label" for="streamingSelect">Streaming Response</label>
+          <select id="streamingSelect" class="select-input">
+            <option value="off" selected>Off</option>
+            <option value="on">On</option>
+          </select>
+          <p class="setting-help">Streams replies token-by-token when supported.</p>
+        </div>
       </div>
 
-      <div class="setting-group">
-        <label class="setting-label" for="modeSelectSettings">Mode</label>
-        <select id="modeSelectSettings" class="select-input">
-          <option value="normal">Normal Chat</option>
-          <option value="code">Code Assistant</option>
-          <option value="research">Web Research Style</option>
-          <option value="creative">Creative Writer</option>
-          <option value="tagalog">Tagalog Assistant</option>
-          <option value="beginner">Explain Like Beginner</option>
-          <option value="business">Business Helper</option>
-          <option value="prompt">Prompt Engineer</option>
-          <option value="social">Social Media Helper</option>
-          <option value="cyber">Cyber Study Mode</option>
-        </select>
+      <!-- Data -->
+      <div class="settings-section">
+        <h3 class="section-title">Data &amp; Privacy</h3>
+
+        <div class="setting-group">
+          <label class="setting-label" for="saveHistorySelect">Save Chat History</label>
+          <select id="saveHistorySelect" class="select-input">
+            <option value="on" selected>On (saved on this device)</option>
+            <option value="off">Off (session only)</option>
+          </select>
+          <p class="setting-help">When On, your chat is saved locally in this browser and restored next time.</p>
+        </div>
+
+        <div class="setting-actions">
+          <button id="clearChatBtnSettings" class="btn btn-danger btn-sm" type="button">Clear Chat</button>
+          <button id="copyChatBtnSettings" class="btn btn-ghost btn-sm" type="button">Copy Chat</button>
+          <button id="exportChatBtnSettings" class="btn btn-ghost btn-sm" type="button">Export Chat</button>
+          <button id="refreshModelsBtnSettings" class="btn btn-ghost btn-sm" type="button">Refresh Models</button>
+        </div>
       </div>
 
-      <div class="setting-group">
-        <label class="setting-label" for="fontSizeSelect">Font Size</label>
-        <select id="fontSizeSelect" class="select-input">
-          <option value="small">Small</option>
-          <option value="medium" selected>Medium</option>
-          <option value="large">Large</option>
-        </select>
-      </div>
-
-      <div class="setting-group">
-        <label class="setting-label" for="streamingSelect">Streaming Response</label>
-        <select id="streamingSelect" class="select-input">
-          <option value="off" selected>Off</option>
-          <option value="on">On</option>
-        </select>
-      </div>
-
-      <div class="setting-group">
-        <label class="setting-label" for="saveHistorySelect">Save Chat History</label>
-        <select id="saveHistorySelect" class="select-input">
-          <option value="on" selected>On (saved on this device)</option>
-          <option value="off">Off (session only)</option>
-        </select>
-        <p class="setting-help">When On, your chat is saved locally in this browser and restored next time. Tap Clear Chat to wipe it.</p>
-      </div>
-
-      <div class="setting-actions">
-        <button id="clearChatBtn" class="btn btn-danger" type="button">Clear Chat</button>
-        <button id="copyChatBtn" class="btn btn-ghost" type="button">Copy Chat</button>
-        <button id="exportChatBtn" class="btn btn-ghost" type="button">Export Chat</button>
-        <button id="refreshModelsBtnSettings" class="btn btn-ghost" type="button">Refresh Models</button>
-      </div>
-
+      <!-- Donation -->
       <div class="donation-card">
-        <h3 class="donation-title">Support BlackCoreAI</h3>
-        <p class="donation-text">
-          If you like this chatbot and want to support development, you can donate any amount via GCash.
-        </p>
+        <h3 class="donation-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/>
+          </svg>
+          Support BlackCoreAI
+        </h3>
+        <p class="donation-text">If BlackCoreAI is useful to you, support development with any amount via GCash.</p>
         <div class="donation-row">
-          <span class="donation-label">GCash:</span>
+          <span class="donation-label">GCash</span>
           <code id="gcashNumber" class="gcash-number">09482887486</code>
-          <button id="copyGcashBtn" class="btn btn-primary btn-small" type="button">Copy</button>
+          <button id="copyGcashBtn" class="btn btn-luxury btn-sm" type="button">Copy</button>
         </div>
         <p id="gcashCopyStatus" class="copy-status" aria-live="polite"></p>
       </div>
 
-      <div class="privacy-note">
-        <h3 class="note-title">Privacy Note</h3>
-        <p>
-          BlackCoreAI is a static frontend app. Your messages are sent to Puter.js to access AI models.
-          When "Save Chat History" is On (default), your chat is stored only in this browser, on this device — it never leaves your phone or PC except to reach the AI provider you chose.
-          You can switch this off any time, or tap Clear Chat to remove what was saved.
-          Your theme, font size, model, mode, streaming, and history preferences are also stored locally.
-          Do not share private or sensitive information.
-        </p>
+      <!-- About -->
+      <div class="settings-section">
+        <h3 class="section-title">About</h3>
+        <div class="info-card">
+          <div class="info-row"><span>App</span><span>BlackCoreAI</span></div>
+          <div class="info-row"><span>Version</span><span>1.0.0</span></div>
+          <div class="info-row"><span>Engine</span><span>Puter.js v2</span></div>
+          <div class="info-row"><span>Build</span><span>Premium Dark-Tech</span></div>
+        </div>
+        <div class="privacy-note">
+          <p>BlackCoreAI is a static frontend app. Messages are sent to Puter.js to access AI models. With Save Chat History on, your conversation is stored locally on this device only — never on our servers. Avoid sharing private or sensitive information.</p>
+        </div>
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- Toast notification -->
+<!-- Toast -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="script.js"></script>
